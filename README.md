@@ -1,4 +1,6 @@
 # GitGoodBench
+![Supported Scenarios](figures/supported-scenario.png)
+
 In this repository we release the code accompanying our paper "GitGoodBench: A Novel Benchmark For Evaluating Agentic Performance
 On Git". We release the benchmark suite we present in the paper on HuggingFace. There you can also find a detailed dataset card:
 - [GitGoodBench](https://huggingface.co/datasets/JetBrains/git_good_bench)
