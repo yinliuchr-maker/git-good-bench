@@ -1,4 +1,4 @@
-[![jetbrains research project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+[![jetbrains research project](https://camo.githubusercontent.com/a370a38a31d10d024bd5757d5bc795f1b5ba5f42416b9c05a16be8c560165cfe/68747470733a2f2f6a622e67672f6261646765732f72657365617263682d706c61737469632e737667)]()
 
 # GitGoodBench
 ![Supported Scenarios](figures/supported-scenario.png)
