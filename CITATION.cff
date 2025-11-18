@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Lindenbauer"
+  given-names: "Tobias"
+- family-names: "Bogomolov"
+  given-names: "Egor"
+- family-names: "Zharov"
+  given-names: "Yaroslav"
+title: "GitGoodBench: A Novel Benchmark For Evaluating Agentic Performance On Git"
+url: "https://github.com/Tobias-Lindenbauer/git-good-bench"
+preferred-citation:
+  type: conference-paper
+  authors:
+  - family-names: "Lindenbauer"
+    given-names: "Tobias"
+  - family-names: "Bogomolov"
+    given-names: "Egor"
+  - family-names: "Zharov"
+    given-names: "Yaroslav"
+  doi: "10.18653/v1/2025.realm-1.19"
+  booktitle: "Proceedings of the 1st Workshop for Research on Agent Language Models (REALM 2025)"
+  month: 7
+  pages: "272--288"
+  title: "GitGoodBench: A Novel Benchmark For Evaluating Agentic Performance On Git"
+  year: 2025
+  address: "Vienna, Austria"
+  publisher: "Association for Computational Linguistics"
+  url: "https://aclanthology.org/2025.realm-1.19/"
+  isbn: "979-8-89176-264-0"

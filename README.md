@@ -45,3 +45,32 @@ presented in the HuggingFace dataset cards and our main results.
 
 In the `data` folder we release an SQLLite DB (`data/vcs-agent-evaluation-metadata.db`) containing the results of the evaluation run with our baseline on GitGoodBench Lite and the data on the original repositories we considered before any preprocessing.
 
+## Citation
+
+If you found this software useful, used our datasets, or were inspired by our work or paper, please cite:
+
+```bibtex
+@inproceedings{lindenbauer-etal-2025-gitgoodbench,
+    title = "{G}it{G}ood{B}ench: A Novel Benchmark For Evaluating Agentic Performance On Git",
+    author = "Lindenbauer, Tobias  and
+      Bogomolov, Egor  and
+      Zharov, Yaroslav",
+    editor = "Kamalloo, Ehsan  and
+      Gontier, Nicolas  and
+      Lu, Xing Han  and
+      Dziri, Nouha  and
+      Murty, Shikhar  and
+      Lacoste, Alexandre",
+    booktitle = "Proceedings of the 1st Workshop for Research on Agent Language Models (REALM 2025)",
+    month = jul,
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.realm-1.19/",
+    doi = "10.18653/v1/2025.realm-1.19",
+    pages = "272--288",
+    ISBN = "979-8-89176-264-0",
+    abstract = "Benchmarks for Software Engineering (SE) AI agents, most notably SWE-bench, have catalyzed progress in programming capabilities of AI agents. However, they overlook critical developer workflows such as Version Control System (VCS) operations. To address this issue, we present GitGoodBench, a novel benchmark for evaluating AI agent performance on Version Control System (VCS) tasks. GitGoodBench covers three core Git scenarios extracted from permissive open-source Python, Java, and Kotlin repositories. Our benchmark provides three datasets: a comprehensive evaluation suite (900 samples), a rapid prototyping version (120 samples), and a training corpus (17,469 samples). We establish baseline performance on the prototyping version of our benchmark using GPT-4o equipped with custom tools, achieving a 21.11{\%} solve rate overall. We expect GitGoodBench to serve as a crucial stepping stone toward truly comprehensive SE agents that go beyond mere programming."
+}
+```
+
