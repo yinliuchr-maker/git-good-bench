@@ -1,0 +1,23 @@
+{
+  "benchmark": "git_good_bench",
+  "agent": "codex@gpt-4o",
+  "total": 2,
+  "passed": 0,
+  "rate": 0.0,
+  "results": [
+    {
+      "task_id": "mockito_mockito_merge_0002",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 73.17577600479126,
+      "error": null
+    },
+    {
+      "task_id": "magefree_mage_merge_0003",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 223.17810201644897,
+      "error": null
+    }
+  ]
+}

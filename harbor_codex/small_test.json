@@ -1,0 +1,23 @@
+{
+  "benchmark": "git_good_bench",
+  "agent": "codex@gpt-4o",
+  "total": 2,
+  "passed": 0,
+  "rate": 0.0,
+  "results": [
+    {
+      "task_id": "chat2db_chat2db_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 19.014708757400513,
+      "error": null
+    },
+    {
+      "task_id": "komoot_photon_merge_0000",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 26.482649087905884,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "benchmark": "git_good_bench",
+  "agent": "codex@gpt-5-nano",
+  "total": 5,
+  "passed": 0,
+  "rate": 0.0,
+  "results": [
+    {
+      "task_id": "mockito_mockito_merge_0002",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 108.6815071105957,
+      "error": null
+    },
+    {
+      "task_id": "magefree_mage_merge_0003",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 315.51139307022095,
+      "error": null
+    },
+    {
+      "task_id": "spring_projects_spring_data_elasticsearch_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 249.11975693702698,
+      "error": null
+    },
+    {
+      "task_id": "spongepowered_spongeapi_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 103.44863700866699,
+      "error": null
+    },
+    {
+      "task_id": "apache_ignite_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 136.85196089744568,
+      "error": null
+    }
+  ]
+}

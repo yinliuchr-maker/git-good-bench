@@ -32,9 +32,11 @@ class TaskResult:
 
 
 class CodexBenchRunner:
-    def __init__(self, work_dir="./codex_workdir"):
+    def __init__(self, work_dir="./codex_workdir", model="gpt-5-nano"):
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(parents=True, exist_ok=True)
+        self.model = model
+        logger.info(f"Using model: {model}")
         logger.info("Loading dataset from HuggingFace...")
         self.dataset = load_dataset("JetBrains/git_good_bench-lite", split="train")
         logger.info(f"Loaded {len(self.dataset)} tasks")
@@ -62,6 +64,8 @@ class CodexBenchRunner:
         subprocess.run(["git", "config", "user.email", "codex@test.com"], cwd=repo_dir)
         subprocess.run(["git", "config", "user.name", "Codex"], cwd=repo_dir)
 
+        conflict_info = None  # Will store extracted conflict info for merge tasks
+        
         if sample_type == "merge":
             parents = scenario.get('parents', [])
             if len(parents) >= 2:
@@ -69,37 +73,135 @@ class CodexBenchRunner:
                 subprocess.run(["git", "checkout", parents[0]], cwd=repo_dir, capture_output=True)
                 subprocess.run(["git", "fetch", "origin", parents[1]], cwd=repo_dir, capture_output=True)
                 subprocess.run(["git", "merge", parents[1], "--no-commit"], cwd=repo_dir, capture_output=True)
+                
+                # Extract conflict information to provide to agent (like original baseline does)
+                conflict_info = self._extract_conflict_info(repo_dir)
+                
         elif sample_type == "file_commit_chain":
             oldest = scenario.get('oldest_commit')
             if oldest:
                 subprocess.run(["git", "fetch", "origin", oldest], cwd=repo_dir, capture_output=True)
                 subprocess.run(["git", "checkout", oldest], cwd=repo_dir, capture_output=True)
 
-        return repo_dir
+        return repo_dir, conflict_info
 
-    def build_prompt(self, task):
+    def _extract_conflict_info(self, repo_dir):
+        """Extract merge conflict information to provide to the agent (similar to original baseline)."""
+        conflict_info = {"files": [], "conflicts": []}
+        
+        # Get list of unmerged files
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "--diff-filter=U"],
+            cwd=repo_dir, capture_output=True, text=True
+        )
+        unmerged_files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+        conflict_info["files"] = unmerged_files
+        
+        # Extract conflict content from each file
+        for i, filepath in enumerate(unmerged_files[:10]):  # Limit to first 10 files
+            full_path = repo_dir / filepath
+            if full_path.exists():
+                try:
+                    content = full_path.read_text(errors='replace')
+                    # Find conflict markers
+                    if '<<<<<<<' in content:
+                        # Extract just the conflict sections (not entire file)
+                        lines = content.split('\n')
+                        in_conflict = False
+                        conflict_text = []
+                        for line in lines:
+                            if line.startswith('<<<<<<<'):
+                                in_conflict = True
+                                conflict_text.append(line)
+                            elif in_conflict:
+                                conflict_text.append(line)
+                                if line.startswith('>>>>>>>'):
+                                    in_conflict = False
+                        
+                        if conflict_text:
+                            # Limit conflict text size
+                            conflict_str = '\n'.join(conflict_text[:100])  # First 100 lines of conflicts
+                            conflict_info["conflicts"].append({
+                                "index": i,
+                                "file": filepath,
+                                "content": conflict_str[:3000]  # Limit to 3000 chars
+                            })
+                except Exception as e:
+                    logger.warning(f"Could not read {filepath}: {e}")
+        
+        return conflict_info
+
+    def build_prompt(self, task, conflict_info=None):
         scenario = ast.literal_eval(task['scenario']) if isinstance(task['scenario'], str) else task['scenario']
         sample_type = task['sample_type']
 
         if sample_type == "merge":
-            return f"""Resolve the merge conflict in this git repository.
+            conflict_files = scenario.get('files_in_merge_conflict', [])
+            if not conflict_files:
+                conflict_files = []
+            
+            # Build prompt similar to original baseline - provide conflict content directly
+            prompt = """You are a staff software engineer resolving git merge conflicts.
 
-Target commit: {scenario.get('merge_commit_hash', 'N/A')}
-Files with conflicts: {scenario.get('files_in_merge_conflict', 'N/A')}
+TASK: Resolve all merge conflicts and complete the merge.
 
-Steps:
-1. Check git status and git diff
-2. Resolve all conflicts
-3. Stage files with git add
-4. Complete the merge"""
+"""
+            # Add conflict file list
+            if conflict_info and conflict_info.get("files"):
+                prompt += f"Files with merge conflicts:\n"
+                for f in conflict_info["files"]:
+                    prompt += f"  - {f}\n"
+                prompt += "\n"
+            elif conflict_files:
+                prompt += f"Files with merge conflicts:\n"
+                for f in conflict_files[:10]:
+                    prompt += f"  - {f}\n"
+                prompt += "\n"
+            
+            # Add actual conflict content (like original baseline's {all_merge_conflicts})
+            if conflict_info and conflict_info.get("conflicts"):
+                prompt += "MERGE CONFLICTS TO RESOLVE:\n"
+                prompt += "=" * 50 + "\n"
+                for conf in conflict_info["conflicts"]:
+                    prompt += f"\n<CONFLICT-{conf['index']}>\n"
+                    prompt += f"File: {conf['file']}\n"
+                    prompt += f"{conf['content']}\n"
+                    prompt += f"</CONFLICT-{conf['index']}>\n"
+                prompt += "=" * 50 + "\n\n"
+            
+            prompt += """INSTRUCTIONS:
+1. For each conflict shown above:
+   - Analyze both sides (between <<<<<<< and =======, and between ======= and >>>>>>>)
+   - Decide which content to keep (or merge both)
+   - Edit the file to remove ALL conflict markers and keep the correct content
+
+2. Use these commands:
+   - View file: cat <filepath>
+   - Edit file: Use sed, echo with redirect, or create with cat << 'EOF'
+   - Stage resolved file: git add <filepath>
+
+3. After resolving all conflicts:
+   - Verify: git diff --name-only --diff-filter=U (should be empty)
+   - Complete: git commit --no-edit
+
+IMPORTANT:
+- Remove ALL conflict markers (<<<<<<<, =======, >>>>>>>)
+- Do NOT use git mergetool
+- Make sure the final code is syntactically correct
+"""
+            return prompt
 
         elif sample_type == "file_commit_chain":
-            return f"""Update the target file to match the expected state.
+            return f"""Update the target file to match the expected state at a specific git commit.
+
+Instructions:
+1. Get the target file content from the target commit: git show <commit>:<filepath>
+2. Compare with current file content: cat <filepath>
+3. If they differ, edit the file to match the target exactly
+4. Verify: git hash-object <filepath>
 
 Target file: {scenario.get('file', 'N/A')}
-Target commit: {scenario.get('newest_commit', 'N/A')}
-
-Use git commands to get the file content from the target commit."""
+Target commit: {scenario.get('newest_commit', 'N/A')}"""
 
         return "Unknown task"
 
@@ -111,13 +213,20 @@ Use git commands to get the file content from the target commit."""
                 env["CODEX_API_KEY"] = api_key
 
             result = subprocess.run(
-                ["codex", "exec", "--full-auto", "--sandbox", "workspace-write", prompt],
+                ["codex", "exec", "--dangerously-bypass-approvals-and-sandbox", "--model", self.model, prompt],
                 cwd=repo_dir, capture_output=True, text=True, timeout=timeout, env=env
             )
-            return result.returncode == 0
+            
+            # Codex may return non-zero even when it completed work
+            # We'll check the actual repo state in evaluate() instead
+            if result.returncode != 0:
+                logger.debug(f"Codex returned non-zero: {result.returncode}")
+            
+            # Return True to continue to evaluation - let evaluate() determine success
+            return True
         except subprocess.TimeoutExpired:
             logger.warning(f"Timeout after {timeout}s")
-            return False
+            return True  # Still evaluate - partial work may have been done
         except FileNotFoundError:
             logger.error("Codex CLI not found. Install: npm i -g @openai/codex")
             return False
@@ -133,9 +242,22 @@ Use git commands to get the file content from the target commit."""
             if sample_type == "merge":
                 expected_hash = scenario.get('merge_commit_hash')
                 if not expected_hash:
+                    logger.warning(f"No merge_commit_hash in scenario")
                     return False
+                
+                # Check if there are still unmerged paths
+                result = subprocess.run(
+                    ["git", "diff", "--name-only", "--diff-filter=U"],
+                    cwd=repo_dir, capture_output=True, text=True
+                )
+                unmerged = result.stdout.strip()
+                if unmerged:
+                    logger.warning(f"Unmerged files remain: {unmerged}")
+                    return False
+                
                 result = subprocess.run(["git", "write-tree"], cwd=repo_dir, capture_output=True, text=True)
                 if result.returncode != 0:
+                    logger.warning(f"git write-tree failed: {result.stderr}")
                     return False
                 current_tree = result.stdout.strip()
 
@@ -145,9 +267,14 @@ Use git commands to get the file content from the target commit."""
                     cwd=repo_dir, capture_output=True, text=True
                 )
                 if result.returncode != 0:
+                    logger.warning(f"Could not get expected tree: {result.stderr}")
                     return False
                 expected_tree = result.stdout.strip()
-                return current_tree == expected_tree
+                
+                match = current_tree == expected_tree
+                if not match:
+                    logger.warning(f"Tree mismatch: got {current_tree}, expected {expected_tree}")
+                return match
 
             elif sample_type == "file_commit_chain":
                 file_path = scenario.get('file')
@@ -202,8 +329,8 @@ Use git commands to get the file content from the target commit."""
             success = False
 
             try:
-                repo_dir = self.setup_task(task)
-                prompt = self.build_prompt(task)
+                repo_dir, conflict_info = self.setup_task(task)
+                prompt = self.build_prompt(task, conflict_info)
                 if self.run_codex(repo_dir, prompt):
                     success = self.evaluate(task, repo_dir)
                 else:
@@ -227,7 +354,7 @@ Use git commands to get the file content from the target commit."""
     def save(self, results, path):
         data = {
             "benchmark": "git_good_bench",
-            "agent": "codex",
+            "agent": f"codex@{self.model}",
             "total": len(results),
             "passed": sum(1 for r in results if r.success),
             "rate": sum(1 for r in results if r.success) / len(results) if results else 0,
@@ -246,13 +373,14 @@ def main():
     parser.add_argument("--task-ids", nargs="+")
     parser.add_argument("--output", default="codex_results.json")
     parser.add_argument("--work-dir", default="./codex_workdir")
+    parser.add_argument("--model", default="gpt-5-nano", help="Model to use (e.g., gpt-5-nano, gpt-5-mini)")
     args = parser.parse_args()
 
     if not os.environ.get("OPENAI_API_KEY") and not os.environ.get("CODEX_API_KEY"):
         logger.error("OPENAI_API_KEY or CODEX_API_KEY not set")
         sys.exit(1)
 
-    runner = CodexBenchRunner(work_dir=args.work_dir)
+    runner = CodexBenchRunner(work_dir=args.work_dir, model=args.model)
     results = runner.run(num_tasks=args.num_tasks, task_ids=args.task_ids)
     runner.save(results, args.output)
 

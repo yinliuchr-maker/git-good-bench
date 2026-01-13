@@ -1,0 +1,44 @@
+{
+  "benchmark": "git_good_bench",
+  "agent": "codex@gpt-4o",
+  "total": 5,
+  "passed": 0,
+  "rate": 0.0,
+  "results": [
+    {
+      "task_id": "mockito_mockito_merge_0002",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 30.957961082458496,
+      "error": "Codex failed"
+    },
+    {
+      "task_id": "magefree_mage_merge_0003",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 176.44113111495972,
+      "error": "Codex failed"
+    },
+    {
+      "task_id": "spring_projects_spring_data_elasticsearch_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 13.036509037017822,
+      "error": "Codex failed"
+    },
+    {
+      "task_id": "spongepowered_spongeapi_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 9669.950715780258,
+      "error": "Codex failed"
+    },
+    {
+      "task_id": "apache_ignite_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 17493.298876047134,
+      "error": "Codex failed"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+codex_workdir/
+__pycache__/
+*.pyc
+test_debug/
+test_extract/

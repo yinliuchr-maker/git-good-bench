@@ -1,0 +1,79 @@
+{
+  "benchmark": "git_good_bench",
+  "agent": "codex@gpt-4o",
+  "total": 10,
+  "passed": 0,
+  "rate": 0.0,
+  "results": [
+    {
+      "task_id": "mockito_mockito_merge_0002",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 79.3745059967041,
+      "error": null
+    },
+    {
+      "task_id": "magefree_mage_merge_0003",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 92.70798516273499,
+      "error": null
+    },
+    {
+      "task_id": "spring_projects_spring_data_elasticsearch_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 39.14137387275696,
+      "error": null
+    },
+    {
+      "task_id": "spongepowered_spongeapi_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 11.435879945755005,
+      "error": null
+    },
+    {
+      "task_id": "apache_ignite_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 70.77678275108337,
+      "error": null
+    },
+    {
+      "task_id": "tlaplus_tlaplus_merge_0000",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 85.90876984596252,
+      "error": null
+    },
+    {
+      "task_id": "apache_cloudstack_merge_0043",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 71.12954902648926,
+      "error": null
+    },
+    {
+      "task_id": "chat2db_chat2db_merge_0001",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 10.802697896957397,
+      "error": null
+    },
+    {
+      "task_id": "vespa_engine_vespa_merge_0000",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 209.74348497390747,
+      "error": null
+    },
+    {
+      "task_id": "komoot_photon_merge_0000",
+      "sample_type": "merge",
+      "success": false,
+      "execution_time_sec": 8.955184936523438,
+      "error": null
+    }
+  ]
+}
